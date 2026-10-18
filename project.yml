@@ -24,6 +24,7 @@ targets:
         CURRENT_PROJECT_VERSION: "1"
         SWIFT_VERSION: "5.0"                 # modo Swift 5: evita errores estrictos de concurrencia de Swift 6
         TARGETED_DEVICE_FAMILY: "1"          # 1 = solo iPhone
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon   # ícono en MisFinanzas/Assets.xcassets/AppIcon.appiconset
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: "Mis Finanzas"
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
