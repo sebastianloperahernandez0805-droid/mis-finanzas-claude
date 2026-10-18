@@ -1,0 +1,60 @@
+name: Compilar app iOS
+
+# Se ejecuta solo cuando tú lo pides (pestaña Actions ▸ "Compilar app iOS" ▸ Run workflow)
+# y también cada vez que subes cambios a la rama main.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  compilar:
+    runs-on: macos-latest   # máquina Mac que presta GitHub; trae Xcode instalado
+    timeout-minutes: 30
+
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Mostrar versión de Xcode
+        run: xcodebuild -version
+
+      - name: Instalar XcodeGen
+        run: brew install xcodegen
+
+      - name: Generar el proyecto de Xcode
+        run: xcodegen generate
+
+      - name: Compilar para iPhone (sin firmar)
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project MisFinanzas.xcodeproj \
+            -scheme MisFinanzas \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build 2>&1 | tee build.log
+
+      - name: Crear el archivo .ipa
+        run: |
+          mkdir -p Payload
+          cp -R build/Build/Products/Release-iphoneos/MisFinanzas.app Payload/
+          zip -qry MisFinanzas.ipa Payload
+
+      - name: Guardar el .ipa para descargarlo
+        uses: actions/upload-artifact@v4
+        with:
+          name: MisFinanzas-ipa
+          path: MisFinanzas.ipa
+
+      - name: Guardar el registro de compilación (si algo falla)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: registro-de-compilacion
+          path: build.log

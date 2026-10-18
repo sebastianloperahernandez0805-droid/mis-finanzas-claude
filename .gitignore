@@ -1,0 +1,8 @@
+.DS_Store
+build/
+Payload/
+*.ipa
+build.log
+# Lo genera XcodeGen en cada compilación
+*.xcodeproj
+xcuserdata/
