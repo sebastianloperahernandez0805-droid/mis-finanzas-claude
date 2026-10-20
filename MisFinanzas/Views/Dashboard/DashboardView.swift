@@ -11,6 +11,7 @@ struct DashboardView: View {
     @State private var gastoEnEdicion: Gasto?
     @State private var mostrandoNuevoGasto = false
     @State private var mostrandoPresupuesto = false
+    @State private var mostrandoTotales = false
 
     private var esHoy: Bool { Calendar.current.isDateInToday(fecha) }
 
@@ -32,6 +33,14 @@ struct DashboardView: View {
             )
             .navigationTitle(esHoy ? "Hoy" : "Resumen del día")
             .toolbar {
+                // Tabla con el total gastado en el día, la semana, el mes y el año
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        mostrandoTotales = true
+                    } label: {
+                        Label("Totales", systemImage: "tablecells")
+                    }
+                }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         mostrandoNuevoGasto = true
@@ -39,6 +48,10 @@ struct DashboardView: View {
                         Label("Nuevo gasto", systemImage: "plus.circle.fill")
                     }
                 }
+            }
+            .sheet(isPresented: $mostrandoTotales) {
+                TablaTotalesView(fechaInicial: fecha)
+                    .presentationDetents([.medium, .large])
             }
             .sheet(isPresented: $mostrandoNuevoGasto) {
                 GastoFormView(fechaInicial: fechaParaNuevos)
