@@ -38,11 +38,19 @@ final class Ingreso {
 
     /// Cuánto aporta este ingreso a un mes típico.
     /// Un ingreso único solo cuenta en el mes en que se recibió.
-    var equivalenteMensual: Double {
+    var equivalenteMensual: Double { aporteMensual(en: Date.now) }
+
+    /// Cuánto aporta este ingreso al mes de `referencia`.
+    /// Un ingreso único solo cuenta en el mes en que se recibió, y uno recurrente
+    /// solo cuenta desde el mes en que empezó.
+    func aporteMensual(en referencia: Date) -> Double {
+        let calendario = Calendar.current
         switch frecuencia {
         case .unico:
-            return Calendar.current.isDate(fecha, equalTo: .now, toGranularity: .month) ? monto : 0
+            return calendario.isDate(fecha, equalTo: referencia, toGranularity: .month) ? monto : 0
         default:
+            guard let finDeMes = calendario.dateInterval(of: .month, for: referencia)?.end,
+                  fecha < finDeMes else { return 0 }
             return monto * frecuencia.vecesPorMes
         }
     }

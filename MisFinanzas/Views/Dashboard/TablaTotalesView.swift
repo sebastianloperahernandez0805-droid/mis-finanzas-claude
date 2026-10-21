@@ -59,12 +59,12 @@ private struct PeriodoGasto: Identifiable {
 }
 
 private struct TotalCategoria: Identifiable {
-    let categoria: CategoriaGasto
+    let categoria: CategoriaVisual
     let total: Double
     /// Parte del total del periodo, entre 0 y 1.
     let porcentaje: Double
 
-    var id: String { categoria.rawValue }
+    var id: String { categoria.id }
 }
 
 // MARK: - Tabla y desglose
@@ -73,6 +73,7 @@ private struct TotalCategoria: Identifiable {
 /// para traer solo los gastos que hacen falta (el periodo más amplio de los cuatro).
 struct TablaTotalesContenido: View {
     @Query private var gastos: [Gasto]
+    @Query(sort: \CategoriaPersonalizada.fechaCreacion) private var personalizadas: [CategoriaPersonalizada]
     private let fechaReferencia: Date
 
     /// Periodo elegido en el desglose por categoría («dia», «semana», «mes» o «anio»).
@@ -166,7 +167,8 @@ struct TablaTotalesContenido: View {
         let totalPeriodo = delPeriodo.reduce(0) { $0 + $1.monto }
         guard totalPeriodo > 0 else { return [] }
 
-        let agrupado = Dictionary(grouping: delPeriodo, by: { $0.categoria })
+        // Se agrupa por la categoría ya resuelta: así una categoría borrada se suma a «Otros».
+        let agrupado = Dictionary(grouping: delPeriodo, by: { CatalogoCategorias.visual(para: $0.categoriaRaw, personalizadas) })
         return agrupado
             .map { categoria, items in
                 let suma = items.reduce(0) { $0 + $1.monto }

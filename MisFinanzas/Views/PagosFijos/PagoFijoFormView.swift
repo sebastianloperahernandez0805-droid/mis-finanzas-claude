@@ -63,7 +63,15 @@ struct PagoFijoFormView: View {
                     Text("El estado vuelve a «Pendiente» automáticamente cuando empieza un mes nuevo.")
                 }
 
-                if pago != nil {
+                if let pago {
+                    Section {
+                        NavigationLink {
+                            HistorialPagosView(pago: pago)
+                        } label: {
+                            Label("Historial de pagos", systemImage: "clock.arrow.circlepath")
+                        }
+                    }
+
                     Section {
                         Button("Eliminar pago fijo", role: .destructive) {
                             confirmandoBorrado = true
@@ -101,18 +109,20 @@ struct PagoFijoFormView: View {
             pago.diaVencimiento = dia
             pago.categoria = categoria
             pago.nota = nota
-            // Solo se toca la fecha de pago si el interruptor cambió respecto al estado actual.
-            if pagadoEsteMes && !pago.estaPagadoEsteMes {
-                pago.ultimoPago = .now
-            } else if !pagadoEsteMes {
-                pago.ultimoPago = nil
+            // Solo se cambia el pago de este mes si el interruptor es distinto del estado actual.
+            // `alternarPago` también deja constancia (o la quita) en el historial.
+            if pagadoEsteMes != pago.estaPagadoEsteMes {
+                pago.alternarPago(en: contexto)
             }
         } else {
-            contexto.insert(
-                PagoFijo(nombre: nombreLimpio, monto: monto, diaVencimiento: dia,
-                         categoria: categoria, ultimoPago: pagadoEsteMes ? .now : nil, nota: nota)
-            )
+            let nuevo = PagoFijo(nombre: nombreLimpio, monto: monto, diaVencimiento: dia,
+                                 categoria: categoria, nota: nota)
+            contexto.insert(nuevo)
+            if pagadoEsteMes {
+                nuevo.registrarPago(en: contexto)
+            }
         }
+        Recordatorios.actualizar(contexto: contexto)
         cerrar()
     }
 }

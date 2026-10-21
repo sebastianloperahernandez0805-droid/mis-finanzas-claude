@@ -44,6 +44,13 @@ struct AbonoDeudaView: View {
 
                     CampoMonto(titulo: "Monto del abono", texto: $montoTexto)
 
+                    // Atajo: llena el monto con la cuota estimada (solo si la deuda tiene cuotas definidas).
+                    if abono == nil && deuda.cuotaEstimada > 0 {
+                        Button("Usar la cuota estimada (\(Formato.moneda(min(deuda.cuotaEstimada, maximo))))") {
+                            montoTexto = Formato.texto(desde: min(deuda.cuotaEstimada, maximo))
+                        }
+                    }
+
                     Button("Pagar el saldo completo") {
                         montoTexto = Formato.texto(desde: maximo)
                     }

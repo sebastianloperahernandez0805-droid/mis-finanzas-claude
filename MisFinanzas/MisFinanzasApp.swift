@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UserNotifications
 
 /// Punto de entrada de la app.
 ///
@@ -18,7 +19,10 @@ struct MisFinanzasApp: App {
             Deuda.self,
             AbonoDeuda.self,
             MetaAhorro.self,
-            MovimientoMeta.self
+            MovimientoMeta.self,
+            CategoriaPersonalizada.self,
+            PresupuestoCategoria.self,
+            PagoRealizado.self
         ])
         let configuracion = ModelConfiguration(
             schema: esquema,
@@ -31,6 +35,11 @@ struct MisFinanzasApp: App {
             fatalError("No se pudo crear el almacenamiento local: \(error)")
         }
     }()
+
+    init() {
+        // Permite que los recordatorios también se vean cuando la app está abierta.
+        UNUserNotificationCenter.current().delegate = DelegadoNotificaciones.compartido
+    }
 
     var body: some Scene {
         WindowGroup {

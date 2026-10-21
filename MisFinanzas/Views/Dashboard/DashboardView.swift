@@ -12,6 +12,7 @@ struct DashboardView: View {
     @State private var mostrandoNuevoGasto = false
     @State private var mostrandoPresupuesto = false
     @State private var mostrandoTotales = false
+    @State private var pantallaExtra: PantallaExtra?
 
     private var esHoy: Bool { Calendar.current.isDateInToday(fecha) }
 
@@ -41,6 +42,20 @@ struct DashboardView: View {
                         Label("Totales", systemImage: "tablecells")
                     }
                 }
+                // Menú con el resto de funciones: resumen del mes, presupuestos, buscador...
+                ToolbarItem(placement: .topBarLeading) {
+                    Menu {
+                        ForEach(PantallaExtra.allCases) { pantalla in
+                            Button {
+                                pantallaExtra = pantalla
+                            } label: {
+                                Label(pantalla.titulo, systemImage: pantalla.icono)
+                            }
+                        }
+                    } label: {
+                        Label("Más", systemImage: "ellipsis.circle")
+                    }
+                }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         mostrandoNuevoGasto = true
@@ -48,6 +63,9 @@ struct DashboardView: View {
                         Label("Nuevo gasto", systemImage: "plus.circle.fill")
                     }
                 }
+            }
+            .sheet(item: $pantallaExtra) { pantalla in
+                PantallaExtraView(pantalla: pantalla)
             }
             .sheet(isPresented: $mostrandoTotales) {
                 TablaTotalesView(fechaInicial: fecha)
@@ -72,6 +90,7 @@ struct DashboardView: View {
 struct ContenidoDiaView: View {
     @Environment(\.modelContext) private var contexto
     @Query private var gastos: [Gasto]
+    @Query(sort: \CategoriaPersonalizada.fechaCreacion) private var personalizadas: [CategoriaPersonalizada]
 
     @Binding var fecha: Date
     let fechaParaNuevos: Date
@@ -141,7 +160,8 @@ struct ContenidoDiaView: View {
                     .listRowSeparator(.hidden)
                 } else {
                     ForEach(gastos) { gasto in
-                        FilaGasto(gasto: gasto)
+                        FilaGasto(gasto: gasto,
+                                  categoria: CatalogoCategorias.visual(para: gasto.categoriaRaw, personalizadas))
                             .contentShape(Rectangle())
                             .onTapGesture { alEditar(gasto) }
                             .swipeActions(edge: .trailing) {

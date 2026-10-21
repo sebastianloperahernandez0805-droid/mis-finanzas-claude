@@ -257,15 +257,26 @@ struct AgregarRapidoView: View {
 
 struct FilaGasto: View {
     let gasto: Gasto
+    /// Categoría ya resuelta (predeterminada o propia) para mostrar su ícono, color y nombre.
+    let categoria: CategoriaVisual
+    /// En los resultados de búsqueda se muestra la fecha completa en lugar de solo la hora.
+    var mostrarFecha: Bool = false
+
+    private var detalle: String {
+        if mostrarFecha {
+            return "\(gasto.fecha.formatted(date: .abbreviated, time: .omitted)) · \(categoria.nombre)"
+        }
+        return "\(gasto.fecha.formatted(date: .omitted, time: .shortened)) · \(categoria.nombre)"
+    }
 
     var body: some View {
         HStack(spacing: 12) {
-            IconoCirculo(sistema: gasto.categoria.icono, color: gasto.categoria.color)
+            IconoCirculo(sistema: categoria.icono, color: categoria.color)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(gasto.concepto)
                     .font(.body.weight(.medium))
-                Text("\(gasto.fecha.formatted(date: .omitted, time: .shortened)) · \(gasto.categoria.nombre)")
+                Text(detalle)
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

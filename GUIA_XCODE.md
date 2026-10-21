@@ -89,9 +89,25 @@ Al arrastrar los archivos, marca **Copy items if needed** y que el target `MisFi
 
 **Moneda.** Se toma de la región del iPhone (en Colombia aparecerá en COP). Para fijar una moneda concreta, cambia `codigoMoneda` en `Formato.swift`.
 
+## Funciones extra (menú «Más» de la pestaña Hoy)
+
+El botón con tres puntos (arriba a la izquierda en *Hoy*) abre estas pantallas:
+
+- **Resumen del mes**: ingresos, gastos, pagos fijos (pagados y pendientes), abonos a deudas y lo apartado en metas; al final, cuánto te queda. Compara contra el mes anterior.
+- **Presupuestos**: un límite mensual por categoría, con barra que se pone naranja al 80 % y roja al pasarte.
+- **Buscar gastos**: por concepto, nota, categoría o monto exacto, con filtro por categoría.
+- **Categorías**: crea las tuyas (nombre, color e ícono). Al borrar una, sus gastos pasan a «Otros».
+- **Recordatorios**: avisos locales a las 9:00 a. m. de pagos fijos pendientes y deudas con día de pago o fecha límite. Se reprograman al abrir la app y al cambiar datos.
+- **Copia de seguridad**: exporta todo a un archivo `.json` (compartir o guardar en Archivos) y restaura desde él. Restaurar reemplaza los datos actuales.
+
+Además: cada pago fijo tiene un **historial mes por mes** (mantén pulsada la fila o ábrelo desde el formulario) y las deudas aceptan **interés anual, número de cuotas y día de pago**, con cuota e interés mensual estimados.
+
+**Datos nuevos.** `CategoriaPersonalizada`, `PresupuestoCategoria` y `PagoRealizado` son modelos nuevos; `Deuda` ganó `tasaInteresAnual`, `numeroCuotas` y `diaPago`, y `PagoFijo` ganó `historial`. Todos tienen valores por defecto, así que SwiftData migra la base existente sin perder nada. Regla para el futuro: nunca renombrar ni borrar propiedades ya guardadas; solo agregar con valor por defecto.
+
+---
+
 ## Ideas para siguientes versiones
 
 - Registrar automáticamente un gasto al marcar un pago fijo como pagado.
-- Notificaciones locales (no requieren servidor) para recordar vencimientos.
-- Resumen mensual con gráfico por categoría.
 - Exportar los datos a CSV desde la propia app.
+- Bloqueo con Face ID o código (se dejó fuera a pedido).

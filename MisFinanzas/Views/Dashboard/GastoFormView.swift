@@ -5,26 +5,37 @@ import SwiftData
 struct GastoFormView: View {
     @Environment(\.modelContext) private var contexto
     @Environment(\.dismiss) private var cerrar
+    @Query(sort: \CategoriaPersonalizada.fechaCreacion) private var personalizadas: [CategoriaPersonalizada]
 
     let gasto: Gasto?
 
     @State private var concepto: String
     @State private var montoTexto: String
-    @State private var categoria: CategoriaGasto
+    /// Clave de la categoría elegida («comida» o «personalizada:UUID»).
+    @State private var categoriaClave: String
     @State private var fecha: Date
     @State private var nota: String
     @State private var confirmandoBorrado = false
+    @State private var creandoCategoria = false
 
     init(gasto: Gasto? = nil, fechaInicial: Date = .now) {
         self.gasto = gasto
         _concepto = State(initialValue: gasto?.concepto ?? "")
         _montoTexto = State(initialValue: gasto.map { Formato.texto(desde: $0.monto) } ?? "")
-        _categoria = State(initialValue: gasto?.categoria ?? .otros)
+        _categoriaClave = State(initialValue: gasto?.categoriaRaw ?? CategoriaGasto.otros.rawValue)
         _fecha = State(initialValue: gasto?.fecha ?? fechaInicial)
         _nota = State(initialValue: gasto?.nota ?? "")
     }
 
     private var monto: Double { Formato.numero(desde: montoTexto) ?? 0 }
+
+    /// Puente entre la clave guardada y el selector de chips (que trabaja con `CategoriaVisual`).
+    private var categoriaElegida: Binding<CategoriaVisual> {
+        Binding(
+            get: { CatalogoCategorias.visual(para: categoriaClave, personalizadas) },
+            set: { categoriaClave = $0.id }
+        )
+    }
 
     private var esValido: Bool {
         !concepto.trimmingCharacters(in: .whitespaces).isEmpty && monto > 0
@@ -39,8 +50,14 @@ struct GastoFormView: View {
                 }
 
                 Section("Categoría") {
-                    SelectorChips(opciones: CategoriaGasto.allCases, seleccion: $categoria)
+                    SelectorChips(opciones: CatalogoCategorias.todas(personalizadas), seleccion: categoriaElegida)
                         .listRowInsets(EdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12))
+
+                    Button {
+                        creandoCategoria = true
+                    } label: {
+                        Label("Nueva categoría", systemImage: "plus.circle")
+                    }
                 }
 
                 Section {
@@ -72,6 +89,10 @@ struct GastoFormView: View {
                 Button("Eliminar", role: .destructive) { eliminar() }
                 Button("Cancelar", role: .cancel) { }
             }
+            .sheet(isPresented: $creandoCategoria) {
+                // Al crear la categoría queda elegida para este gasto.
+                CategoriaFormView(alGuardar: { nueva in categoriaClave = nueva.clave })
+            }
         }
     }
 
@@ -83,13 +104,13 @@ struct GastoFormView: View {
             // Actualizar: basta con modificar las propiedades; SwiftData guarda solo.
             gasto.concepto = conceptoLimpio
             gasto.monto = monto
-            gasto.categoria = categoria
+            gasto.categoriaClave = categoriaClave
             gasto.fecha = fecha
             gasto.nota = nota
         } else {
-            contexto.insert(
-                Gasto(concepto: conceptoLimpio, monto: monto, fecha: fecha, categoria: categoria, nota: nota)
-            )
+            let nuevo = Gasto(concepto: conceptoLimpio, monto: monto, fecha: fecha, nota: nota)
+            nuevo.categoriaClave = categoriaClave
+            contexto.insert(nuevo)
         }
         cerrar()
     }

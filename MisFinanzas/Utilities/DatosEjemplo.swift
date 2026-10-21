@@ -10,6 +10,7 @@ enum DatosEjemplo {
         let contenedor = try! ModelContainer(
             for: Gasto.self, Ingreso.self, PagoFijo.self,
             Deuda.self, AbonoDeuda.self, MetaAhorro.self, MovimientoMeta.self,
+            CategoriaPersonalizada.self, PresupuestoCategoria.self, PagoRealizado.self,
             configurations: ModelConfiguration(isStoredInMemoryOnly: true)
         )
         let contexto = contenedor.mainContext
@@ -18,6 +19,15 @@ enum DatosEjemplo {
         contexto.insert(Gasto(concepto: "Almuerzo", monto: 18_000, categoria: .comida))
         contexto.insert(Gasto(concepto: "Bus", monto: 4_500, categoria: .transporte))
         contexto.insert(Gasto(concepto: "Café", monto: 6_000, categoria: .comida))
+
+        // Categoría propia con un gasto y un presupuesto
+        let mascotas = CategoriaPersonalizada(nombre: "Mascotas", iconoSistema: "pawprint.fill", paleta: .naranja)
+        contexto.insert(mascotas)
+        let croquetas = Gasto(concepto: "Croquetas", monto: 55_000)
+        croquetas.categoriaClave = mascotas.clave
+        contexto.insert(croquetas)
+        contexto.insert(PresupuestoCategoria(claveCategoria: CategoriaGasto.comida.rawValue, montoMensual: 400_000))
+        contexto.insert(PresupuestoCategoria(claveCategoria: mascotas.clave, montoMensual: 120_000))
         for dias in 1...6 {
             let fecha = Calendar.current.date(byAdding: .day, value: -dias, to: .now) ?? .now
             contexto.insert(Gasto(concepto: "Gasto del día", monto: Double(10_000 + dias * 7_500), fecha: fecha))
@@ -28,12 +38,17 @@ enum DatosEjemplo {
         contexto.insert(Ingreso(fuente: "Ventas en línea", monto: 150_000, tipo: .ventas, frecuencia: .semanal))
 
         // Pagos fijos
-        contexto.insert(PagoFijo(nombre: "Arriendo", monto: 900_000, diaVencimiento: 5, categoria: .arriendo, ultimoPago: .now))
+        let arriendo = PagoFijo(nombre: "Arriendo", monto: 900_000, diaVencimiento: 5, categoria: .arriendo)
+        contexto.insert(arriendo)
+        let mesPasado = Calendar.current.date(byAdding: .month, value: -1, to: .now) ?? .now
+        arriendo.registrarPago(fecha: mesPasado, en: contexto)
+        arriendo.registrarPago(en: contexto)
         contexto.insert(PagoFijo(nombre: "Internet", monto: 85_000, diaVencimiento: 18, categoria: .servicios))
         contexto.insert(PagoFijo(nombre: "Netflix", monto: 33_900, diaVencimiento: 25, categoria: .suscripcion))
 
         // Deuda con abonos
-        let deuda = Deuda(nombre: "Tarjeta Visa", acreedor: "Banco", tipo: .tarjeta, montoTotal: 2_000_000)
+        let deuda = Deuda(nombre: "Tarjeta Visa", acreedor: "Banco", tipo: .tarjeta, montoTotal: 2_000_000,
+                          tasaInteresAnual: 28, numeroCuotas: 12, diaPago: 15)
         contexto.insert(deuda)
         deuda.abonar(300_000, nota: "Primer abono", en: contexto)
         deuda.abonar(150_000, en: contexto)

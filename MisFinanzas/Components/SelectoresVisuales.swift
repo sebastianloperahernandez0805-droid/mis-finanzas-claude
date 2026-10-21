@@ -67,10 +67,12 @@ struct SelectorColor: View {
 struct SelectorIcono: View {
     @Binding var seleccion: String
     var color: Color = Tema.acento
+    /// Íconos entre los que se puede elegir (por defecto, los de las metas de ahorro).
+    var iconos: [String] = IconosMeta.todos
 
     var body: some View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 44), spacing: 10)], spacing: 10) {
-            ForEach(IconosMeta.todos, id: \.self) { nombre in
+            ForEach(iconos, id: \.self) { nombre in
                 let activo = seleccion == nombre
                 Button {
                     withAnimation(.snappy) { seleccion = nombre }

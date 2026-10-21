@@ -30,4 +30,10 @@ final class Gasto {
         get { CategoriaGasto(rawValue: categoriaRaw) ?? .otros }
         set { categoriaRaw = newValue.rawValue }
     }
+
+    /// Clave de la categoría: «comida», «transporte»... o «personalizada:UUID» si es una categoría propia.
+    var categoriaClave: String {
+        get { categoriaRaw }
+        set { categoriaRaw = newValue }
+    }
 }

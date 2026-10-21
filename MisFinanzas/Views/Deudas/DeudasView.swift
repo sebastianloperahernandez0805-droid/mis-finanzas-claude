@@ -172,6 +172,10 @@ struct TarjetaDeuda: View {
             .font(.caption)
             .foregroundStyle(.secondary)
 
+            if deuda.tieneInteresOCuotas && !deuda.estaSaldada {
+                InfoInteresDeuda(deuda: deuda)
+            }
+
             if !deuda.estaSaldada {
                 BotonAccion(titulo: "Abonar a deuda", icono: "plus.circle.fill",
                             color: Tema.deuda, accion: alAbonar)
@@ -179,6 +183,38 @@ struct TarjetaDeuda: View {
         }
         .estiloTarjeta()
         .animation(.snappy, value: deuda.saldoPendiente)
+    }
+}
+
+// MARK: - Interés y cuotas
+
+/// Recuadro con la cuota, el interés y el día de pago de una deuda (valores estimados).
+struct InfoInteresDeuda: View {
+    let deuda: Deuda
+
+    private var tasaTexto: String {
+        deuda.tasaInteresAnual.formatted(.number.precision(.fractionLength(0...2)))
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            if deuda.numeroCuotas > 0 {
+                Label("Cuota ≈ \(Formato.moneda(deuda.cuotaEstimada)) · faltan \(deuda.cuotasRestantes) de \(deuda.numeroCuotas)",
+                      systemImage: "list.number")
+            }
+            if deuda.tasaInteresAnual > 0 {
+                Label("Interés \(tasaTexto) % anual · ≈ \(Formato.moneda(deuda.interesMensualEstimado)) al mes",
+                      systemImage: "percent")
+            }
+            if deuda.diaPago > 0 {
+                Label("Pagas el día \(deuda.diaPago) de cada mes", systemImage: "calendar")
+            }
+        }
+        .font(.caption)
+        .foregroundStyle(.secondary)
+        .padding(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Tema.deuda.opacity(0.08), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 }
 

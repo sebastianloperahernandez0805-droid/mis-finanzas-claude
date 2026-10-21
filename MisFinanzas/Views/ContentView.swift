@@ -3,6 +3,9 @@ import SwiftData
 
 /// Navegación principal: una pestaña por módulo.
 struct ContentView: View {
+    @Environment(\.modelContext) private var contexto
+    @Environment(\.scenePhase) private var faseEscena
+
     var body: some View {
         TabView {
             DashboardView()
@@ -21,6 +24,15 @@ struct ContentView: View {
                 .tabItem { Label("Metas", systemImage: "target") }
         }
         .tint(Tema.acento)
+        // Los recordatorios se vuelven a programar al abrir la app y cada vez que vuelve a primer plano.
+        .task {
+            Recordatorios.actualizar(contexto: contexto)
+        }
+        .onChange(of: faseEscena) { _, nueva in
+            if nueva == .active {
+                Recordatorios.actualizar(contexto: contexto)
+            }
+        }
     }
 }
 

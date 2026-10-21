@@ -10,6 +10,7 @@ struct PagosFijosView: View {
     @State private var mostrandoNuevo = false
     @State private var enEdicion: PagoFijo?
     @State private var porEliminar: PagoFijo?
+    @State private var verHistorial: PagoFijo?
 
     private var pendientes: [PagoFijo] { pagos.filter { !$0.estaPagadoEsteMes } }
     private var pagados: [PagoFijo] { pagos.filter { $0.estaPagadoEsteMes } }
@@ -64,6 +65,9 @@ struct PagosFijosView: View {
                     }
                 }
             }
+            .navigationDestination(item: $verHistorial) { pago in
+                HistorialPagosView(pago: pago)
+            }
             .sheet(isPresented: $mostrandoNuevo) { PagoFijoFormView() }
             .sheet(item: $enEdicion) { PagoFijoFormView(pago: $0) }
             .confirmarEliminacion(
@@ -81,9 +85,17 @@ struct PagosFijosView: View {
         FilaPagoFijo(pago: pago)
             .contentShape(Rectangle())
             .onTapGesture { enEdicion = pago }
+            .contextMenu {
+                Button { verHistorial = pago } label: {
+                    Label("Ver historial", systemImage: "clock.arrow.circlepath")
+                }
+                Button { enEdicion = pago } label: {
+                    Label("Editar", systemImage: "pencil")
+                }
+            }
             .swipeActions(edge: .leading) {
                 Button {
-                    withAnimation(.snappy) { pago.alternarPago() }
+                    withAnimation(.snappy) { pago.alternarPago(en: contexto) }
                 } label: {
                     Label(pago.estaPagadoEsteMes ? "Pendiente" : "Pagado",
                           systemImage: pago.estaPagadoEsteMes ? "arrow.uturn.backward" : "checkmark")
@@ -153,6 +165,8 @@ struct ResumenPagosFijos: View {
 // MARK: - Fila de pago fijo
 
 struct FilaPagoFijo: View {
+    @Environment(\.modelContext) private var contexto
+
     let pago: PagoFijo
 
     private var subtitulo: String {
@@ -189,7 +203,7 @@ struct FilaPagoFijo: View {
 
                 // Un toque alterna entre Pagado y Pendiente
                 Button {
-                    withAnimation(.snappy) { pago.alternarPago() }
+                    withAnimation(.snappy) { pago.alternarPago(en: contexto) }
                 } label: {
                     ChipEstado(texto: pago.estado.nombre, icono: pago.estado.icono, color: pago.estado.color)
                 }
