@@ -9,7 +9,10 @@ on:
 
 jobs:
   compilar:
-    runs-on: macos-latest   # máquina Mac que presta GitHub; trae Xcode instalado
+    # Máquina Mac que presta GitHub; trae Xcode instalado. Se usa la versión Intel porque las
+    # Mac con chip Apple (macos-latest) se quedan sin cupo a ratos y el trabajo se cancela sin compilar.
+    # El resultado es el mismo: la app para iPhone se compila igual en cualquiera de las dos.
+    runs-on: macos-15-intel
     timeout-minutes: 30
 
     steps:
