@@ -114,7 +114,7 @@ struct RespaldoView: View {
             let formateador = DateFormatter()
             formateador.locale = Locale(identifier: "en_US_POSIX")
             formateador.dateFormat = "yyyy-MM-dd"
-            let nombre = "MisFinanzas-\(formateador.string(from: Date.now)).json"
+            let nombre = "Mivra-\(formateador.string(from: Date.now)).json"
 
             let url = FileManager.default.temporaryDirectory.appendingPathComponent(nombre)
             try datos.write(to: url, options: .atomic)

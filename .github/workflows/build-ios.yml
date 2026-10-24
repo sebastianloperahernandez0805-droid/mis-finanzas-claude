@@ -58,13 +58,13 @@ jobs:
         run: |
           mkdir -p Payload
           cp -R build/Build/Products/Release-iphoneos/MisFinanzas.app Payload/
-          zip -qry MisFinanzas.ipa Payload
+          zip -qry Mivra.ipa Payload
 
       - name: Guardar el .ipa para descargarlo
         uses: actions/upload-artifact@v4
         with:
-          name: MisFinanzas-ipa
-          path: MisFinanzas.ipa
+          name: Mivra-ipa
+          path: Mivra.ipa
 
       - name: Resumir los errores de compilación (si algo falla)
         if: failure()

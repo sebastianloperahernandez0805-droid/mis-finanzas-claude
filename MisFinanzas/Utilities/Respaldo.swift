@@ -6,6 +6,7 @@ import SwiftData
 /// Contenido completo de una copia de seguridad. Se guarda como un archivo .json legible.
 /// Si en el futuro se agregan datos nuevos, deben ser opcionales para que las copias viejas sigan abriendo.
 struct RespaldoDatos: Codable {
+    /// Marca interna del archivo. No se cambia a «Mivra» para que las copias hechas antes sigan abriendo.
     static let nombreFormato = "MisFinanzas"
     static let versionActual = 1
 
@@ -124,7 +125,7 @@ enum ErrorRespaldo: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .archivoInvalido:
-            return "Ese archivo no es una copia de seguridad de Mis Finanzas."
+            return "Ese archivo no es una copia de seguridad de Mivra."
         case .versionNueva(let version):
             return "Esa copia (versión \(version)) es más nueva que esta app. Actualiza la app e inténtalo de nuevo."
         }

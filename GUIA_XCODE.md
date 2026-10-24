@@ -1,4 +1,4 @@
-# Mis Finanzas — guía para montar el proyecto en Xcode
+# Mivra — guía para montar el proyecto en Xcode
 
 App de finanzas personales para iPhone, en **Swift + SwiftUI + SwiftData**, 100 % offline.
 Requisitos: **Xcode 15 o superior** y **iOS 17+** como versión mínima (SwiftData y `@Query` lo exigen).

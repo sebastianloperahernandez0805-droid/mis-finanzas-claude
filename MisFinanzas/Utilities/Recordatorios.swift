@@ -129,7 +129,7 @@ enum Recordatorios {
     /// Programa un aviso de prueba para dentro de unos segundos.
     static func enviarPrueba() async {
         let contenido = UNMutableNotificationContent()
-        contenido.title = "Mis Finanzas"
+        contenido.title = "Mivra"
         contenido.body = "Así se verán tus recordatorios de vencimientos."
         contenido.sound = .default
         let disparador = UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false)
