@@ -24,6 +24,7 @@ struct ContentView: View {
                 .tabItem { Label("Metas", systemImage: "target") }
         }
         .tint(Tema.acento)
+        .barraDePestanasLiquida()
         // Los recordatorios se vuelven a programar al abrir la app y cada vez que vuelve a primer plano.
         .task {
             Recordatorios.actualizar(contexto: contexto)

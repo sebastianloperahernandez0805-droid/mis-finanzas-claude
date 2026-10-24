@@ -52,6 +52,7 @@ struct DetalleMetaView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .listaLiquida()
         .navigationTitle(meta.nombre)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

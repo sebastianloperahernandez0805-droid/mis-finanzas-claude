@@ -11,16 +11,27 @@ jobs:
   compilar:
     # Máquina Mac que presta GitHub; trae Xcode instalado. Se usa la versión Intel porque las
     # Mac con chip Apple (macos-latest) se quedan sin cupo a ratos y el trabajo se cancela sin compilar.
-    # El resultado es el mismo: la app para iPhone se compila igual en cualquiera de las dos.
-    runs-on: macos-15-intel
-    timeout-minutes: 30
+    # Es la imagen con macOS 26, que trae Xcode 26: compilar con Xcode 26 es lo que activa el
+    # diseño Liquid Glass del sistema (barra de pestañas, barras superiores, hojas) en iOS 26.
+    runs-on: macos-26-intel
+    timeout-minutes: 40
 
     steps:
       - name: Descargar el código
         uses: actions/checkout@v4
 
+      - name: Elegir la versión más nueva de Xcode 26
+        run: |
+          ls -d /Applications/Xcode*.app || true
+          XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          if [ -n "$XCODE" ]; then
+            sudo xcode-select -s "$XCODE/Contents/Developer"
+          fi
+
       - name: Mostrar versión de Xcode
-        run: xcodebuild -version
+        run: |
+          xcodebuild -version
+          echo "::notice title=Xcode usado::$(xcodebuild -version | tr '\n' ' ')"
 
       - name: Instalar XcodeGen
         run: brew install xcodegen
@@ -54,6 +65,13 @@ jobs:
         with:
           name: MisFinanzas-ipa
           path: MisFinanzas.ipa
+
+      - name: Resumir los errores de compilación (si algo falla)
+        if: failure()
+        run: |
+          grep -E "error:" build.log | sort -u | head -10 | while IFS= read -r linea; do
+            echo "::error::${linea}"
+          done || true
 
       - name: Guardar el registro de compilación (si algo falla)
         if: failure()

@@ -35,7 +35,7 @@ struct TablaTotalesView: View {
                 }
                 .padding()
             }
-            .background(Tema.fondo.ignoresSafeArea())
+            .fondoLiquido()
             .navigationTitle("Totales de gasto")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

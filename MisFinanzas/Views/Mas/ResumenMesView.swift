@@ -65,7 +65,7 @@ struct ResumenMesView: View {
                 }
                 .padding()
             }
-            .background(Tema.fondo.ignoresSafeArea())
+            .fondoLiquido()
             .navigationTitle("Resumen del mes")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

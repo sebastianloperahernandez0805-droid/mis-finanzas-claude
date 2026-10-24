@@ -90,6 +90,7 @@ struct BuscarGastosView: View {
                 }
             }
             .listStyle(.insetGrouped)
+            .listaLiquida()
             .searchable(text: $texto, placement: .navigationBarDrawer(displayMode: .always),
                         prompt: "Concepto, nota, categoría o monto")
             .navigationTitle("Buscar gastos")

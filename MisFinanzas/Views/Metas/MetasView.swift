@@ -55,7 +55,7 @@ struct MetasView: View {
                 }
                 .padding()
             }
-            .background(Tema.fondo.ignoresSafeArea())
+            .fondoLiquido()
             .animation(.snappy, value: metas.count)
             .navigationTitle("Metas de ahorro")
             .toolbar {

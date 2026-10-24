@@ -56,6 +56,7 @@ struct PagosFijosView: View {
                 }
             }
             .listStyle(.insetGrouped)
+            .listaLiquida()
             .animation(.snappy, value: pendientes.count)
             .navigationTitle("Pagos fijos")
             .toolbar {

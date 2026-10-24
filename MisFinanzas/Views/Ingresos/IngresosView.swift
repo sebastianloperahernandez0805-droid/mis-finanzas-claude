@@ -62,6 +62,7 @@ struct IngresosView: View {
                 }
             }
             .listStyle(.insetGrouped)
+            .listaLiquida()
             .navigationTitle("Ingresos")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {

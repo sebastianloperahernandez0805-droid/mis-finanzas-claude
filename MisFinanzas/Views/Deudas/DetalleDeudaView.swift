@@ -48,6 +48,7 @@ struct DetalleDeudaView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .listaLiquida()
         .navigationTitle(deuda.nombre)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

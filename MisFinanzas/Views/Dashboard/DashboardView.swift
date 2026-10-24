@@ -176,6 +176,7 @@ struct ContenidoDiaView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .listaLiquida()
         .animation(.snappy, value: gastos.count)
     }
 }

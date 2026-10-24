@@ -15,7 +15,7 @@ struct BotonAccion: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 11)
                 .foregroundStyle(relleno ? Color.white : color)
-                .background(relleno ? color : color.opacity(0.15), in: Capsule())
+                .vidrio(en: Capsule(), tinte: relleno ? color : nil, interactivo: true)
         }
         .buttonStyle(EstiloPresionable())
     }

@@ -30,7 +30,7 @@ struct PresupuestosView: View {
                 }
                 .padding()
             }
-            .background(Tema.fondo.ignoresSafeArea())
+            .fondoLiquido()
             .navigationTitle("Presupuestos")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

@@ -42,7 +42,9 @@ struct SelectorDia: View {
             .disabled(esHoy)
             .accessibilityLabel("Día siguiente")
         }
-        .padding(.horizontal, 4)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
+        .vidrio(en: Capsule())
     }
 
     private func cambiar(dias: Int) {

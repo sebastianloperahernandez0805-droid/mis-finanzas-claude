@@ -133,6 +133,7 @@ struct HistorialPagosView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .listaLiquida()
         .navigationTitle("Historial")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $agregando) {

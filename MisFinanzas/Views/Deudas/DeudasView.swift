@@ -52,7 +52,7 @@ struct DeudasView: View {
                 }
                 .padding()
             }
-            .background(Tema.fondo.ignoresSafeArea())
+            .fondoLiquido()
             .animation(.snappy, value: deudas.count)
             .navigationTitle("Deudas")
             .toolbar {

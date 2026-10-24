@@ -50,6 +50,7 @@ struct CategoriasView: View {
                 }
             }
             .listStyle(.insetGrouped)
+            .listaLiquida()
             .navigationTitle("Categorías")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
