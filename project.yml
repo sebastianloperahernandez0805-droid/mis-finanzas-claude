@@ -32,3 +32,4 @@ targets:
         INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.finance
+        INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: "NO"   # la app no usa cifrado propio: evita la pregunta de exportación al subirla a la App Store

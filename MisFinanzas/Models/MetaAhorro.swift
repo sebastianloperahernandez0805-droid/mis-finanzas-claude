@@ -53,6 +53,26 @@ final class MetaAhorro {
 
     var movimientosOrdenados: [MovimientoMeta] { movimientos.sorted { $0.fecha > $1.fecha } }
 
+    /// Meses que faltan para la fecha objetivo (mínimo 1). Nil si no hay fecha o ya pasó.
+    var mesesRestantes: Int? {
+        guard let fecha = fechaObjetivo, fecha > Date.now else { return nil }
+        let dias = fecha.timeIntervalSinceNow / 86_400
+        return max(Int((dias / 30.4375).rounded(.up)), 1)
+    }
+
+    /// Cuánto aportar cada mes para llegar a la meta a tiempo (estimación sencilla,
+    /// sin intereses). Nil si no hay fecha futura o si la meta ya se cumplió.
+    var aporteMensualSugerido: Double? {
+        guard !estaCumplida, faltante > 0, let meses = mesesRestantes else { return nil }
+        return faltante / Double(meses)
+    }
+
+    /// Hay fecha objetivo, ya pasó y la meta todavía no se cumple.
+    var fechaVencida: Bool {
+        guard let fecha = fechaObjetivo else { return false }
+        return fecha <= Date.now && !estaCumplida
+    }
+
     // MARK: Operaciones
 
     /// Registra un movimiento: monto positivo = aporte, negativo = retiro.

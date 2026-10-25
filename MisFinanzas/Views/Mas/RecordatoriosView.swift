@@ -10,6 +10,7 @@ struct RecordatoriosView: View {
 
     @AppStorage(Recordatorios.claveActivos) private var activos = false
     @AppStorage(Recordatorios.claveDiasAntes) private var diasAntes = 1
+    @AppStorage(AlertasPresupuesto.clave) private var alertasPresupuesto = false
 
     @State private var permisoDenegado = false
     @State private var programados = 0
@@ -31,9 +32,29 @@ struct RecordatoriosView: View {
         )
     }
 
+    /// El aviso de presupuestos también pide el permiso de notificaciones al encenderse.
+    private var interruptorPresupuestos: Binding<Bool> {
+        Binding(
+            get: { alertasPresupuesto },
+            set: { nuevo in
+                if nuevo {
+                    Task { await activarPresupuestos() }
+                } else {
+                    alertasPresupuesto = false
+                }
+            }
+        )
+    }
+
     var body: some View {
         NavigationStack {
             Form {
+                Section {
+                    Toggle("Avisarme si me acerco a un presupuesto", isOn: interruptorPresupuestos)
+                } footer: {
+                    Text("Al guardar un gasto, recibirás un aviso cuando una categoría llegue al 80 % de su presupuesto mensual y otro cuando lo supere. Los presupuestos se definen en «Presupuestos».")
+                }
+
                 Section {
                     Toggle("Avisarme de vencimientos", isOn: interruptor)
 
@@ -115,6 +136,13 @@ struct RecordatoriosView: View {
             await Recordatorios.reprogramar(contexto: contexto)
             await contarProgramados()
         }
+    }
+
+    @MainActor
+    private func activarPresupuestos() async {
+        let concedido = await Recordatorios.pedirPermiso()
+        permisoDenegado = !concedido
+        alertasPresupuesto = concedido
     }
 
     @MainActor

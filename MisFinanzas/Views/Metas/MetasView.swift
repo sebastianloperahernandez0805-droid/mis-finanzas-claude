@@ -169,6 +169,16 @@ struct TarjetaMeta: View {
 
             BarraProgreso(valor: meta.progreso, color: color, altura: 14)
 
+            if let sugerido = meta.aporteMensualSugerido {
+                Label("Aporta unos \(Formato.moneda(sugerido)) al mes para llegar a tiempo", systemImage: "calendar.badge.clock")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            } else if meta.fechaVencida {
+                Label("La fecha objetivo ya pasó; puedes editarla", systemImage: "exclamationmark.triangle")
+                    .font(.caption)
+                    .foregroundStyle(Tema.advertencia)
+            }
+
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Ahorrado")

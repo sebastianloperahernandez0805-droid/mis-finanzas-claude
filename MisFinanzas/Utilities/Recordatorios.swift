@@ -53,7 +53,12 @@ enum Recordatorios {
         let miGeneracion = generacion
 
         let centro = UNUserNotificationCenter.current()
-        centro.removeAllPendingNotificationRequests()
+        // Se borran solo los avisos de vencimientos; los avisos de presupuesto ("mf-presupuesto…")
+        // son inmediatos y no deben desaparecer en medio de una reprogramación.
+        let pendientes = await centro.pendingNotificationRequests()
+        let porBorrar = pendientes.map { $0.identifier }.filter { !$0.hasPrefix("mf-presupuesto") }
+        centro.removePendingNotificationRequests(withIdentifiers: porBorrar)
+        guard miGeneracion == generacion else { return }
 
         guard UserDefaults.standard.bool(forKey: claveActivos) else { return }
 

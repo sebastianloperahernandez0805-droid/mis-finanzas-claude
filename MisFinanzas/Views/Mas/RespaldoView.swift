@@ -12,6 +12,10 @@ struct RespaldoView: View {
     @State private var archivo: URL?
     @State private var contenido: [String] = []
 
+    /// Archivo CSV con los movimientos, para abrir en Excel.
+    @State private var archivoCSV: URL?
+    @State private var filasCSV = 0
+
     @State private var eligiendoArchivo = false
     @State private var respaldoLeido: RespaldoDatos?
     @State private var mensajeError: String?
@@ -43,6 +47,22 @@ struct RespaldoView: View {
                 }
 
                 Section {
+                    if let archivoCSV {
+                        ShareLink(item: archivoCSV) {
+                            Label("Exportar movimientos a Excel", systemImage: "tablecells")
+                                .font(.body.weight(.semibold))
+                        }
+                    } else {
+                        Text("Todavía no hay movimientos para exportar.")
+                            .foregroundStyle(.secondary)
+                    }
+                } header: {
+                    Text("Exportar a Excel")
+                } footer: {
+                    Text("Crea un archivo CSV con \(filasCSV) \(filasCSV == 1 ? "movimiento" : "movimientos") (gastos, pagos fijos pagados, abonos a deudas y aportes a metas) para abrirlo en Excel, Numbers o Google Sheets. Sirve para revisar tus cuentas; no se usa para restaurar la app.")
+                }
+
+                Section {
                     Button {
                         eligiendoArchivo = true
                     } label: {
@@ -62,7 +82,7 @@ struct RespaldoView: View {
                     Text("Consejo")
                 }
             }
-            .navigationTitle("Copia de seguridad")
+            .navigationTitle("Copia y Excel")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -124,6 +144,15 @@ struct RespaldoView: View {
         } catch {
             archivo = nil
             mensajeError = "No se pudo preparar la copia: \(error.localizedDescription)"
+        }
+
+        // El archivo para Excel es aparte: si falla, solo se oculta ese botón.
+        if let resultado = try? ExportarCSV.crearMovimientos(en: contexto), resultado.filas > 0 {
+            archivoCSV = resultado.url
+            filasCSV = resultado.filas
+        } else {
+            archivoCSV = nil
+            filasCSV = 0
         }
     }
 

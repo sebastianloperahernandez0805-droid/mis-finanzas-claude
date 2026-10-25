@@ -100,6 +100,9 @@ struct GastoFormView: View {
 
     private func guardar() {
         let conceptoLimpio = concepto.trimmingCharacters(in: .whitespaces)
+        // Se revisa el presupuesto antes de tocar el gasto, para saber cuánto llevaba la categoría.
+        AlertasPresupuesto.revisar(categoriaClave: categoriaClave, fecha: fecha,
+                                   editado: gasto, nuevoMonto: monto, en: contexto)
         if let gasto {
             // Actualizar: basta con modificar las propiedades; SwiftData guarda solo.
             gasto.concepto = conceptoLimpio
