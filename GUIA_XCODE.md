@@ -93,21 +93,27 @@ Al arrastrar los archivos, marca **Copy items if needed** y que el target `MisFi
 
 El botón con tres puntos (arriba a la izquierda en *Hoy*) abre estas pantallas:
 
-- **Resumen del mes**: ingresos, gastos, pagos fijos (pagados y pendientes), abonos a deudas y lo apartado en metas; al final, cuánto te queda. Compara contra el mes anterior.
+- **Resumen del mes**: ingresos, gastos, pagos fijos (pagados y pendientes), abonos a deudas y lo apartado en metas; al final, cuánto te queda. Compara contra el mes anterior y, si registraste depósitos, muestra los ingresos recibidos frente a los estimados.
+- **Cuentas y saldos**: efectivo, banco, Nequi, ahorros... Cada una tiene saldo inicial, depósitos, transferencias entre cuentas y «Ajustar saldo». Al registrar un gasto, pago fijo, abono, aporte a meta o gasto automático puedes elegir la cuenta, y su saldo se calcula solo. En *Ingresos*, desliza una fuente hacia la derecha («Lo recibí») para depositar lo que de verdad llegó.
+- **Tendencias**: barras de los últimos 12 meses (gastos, pagos fijos y deudas) y dona de gastos del mes por categoría.
 - **Presupuestos**: un límite mensual por categoría, con barra que se pone naranja al 80 % y roja al pasarte.
+- **Gastos automáticos**: gastos que se repiten cada semana o cada mes (transporte, mercado). Se crean solos al abrir la app.
 - **Buscar gastos**: por concepto, nota, categoría o monto exacto, con filtro por categoría.
 - **Categorías**: crea las tuyas (nombre, color e ícono). Al borrar una, sus gastos pasan a «Otros».
-- **Recordatorios**: avisos locales a las 9:00 a. m. de pagos fijos pendientes y deudas con día de pago o fecha límite. Se reprograman al abrir la app y al cambiar datos.
-- **Copia de seguridad**: exporta todo a un archivo `.json` (compartir o guardar en Archivos) y restaura desde él. Restaurar reemplaza los datos actuales.
+- **Recordatorios y avisos**: avisos locales a las 9:00 a. m. de pagos fijos pendientes y deudas con día de pago o fecha límite, y un aviso opcional al llegar al 80 % de un presupuesto o pasarte. Se reprograman al abrir la app y al cambiar datos.
+- **Copia de seguridad y Excel**: exporta todo a un archivo `.json` (compartir o guardar en Archivos) y restaura desde él; también crea un `.csv` con tus movimientos para abrirlo en Excel. Restaurar reemplaza los datos actuales.
+- **Acerca de Mivra**: versión, resumen de privacidad y aviso de que las cifras son estimaciones.
 
-Además: cada pago fijo tiene un **historial mes por mes** (mantén pulsada la fila o ábrelo desde el formulario) y las deudas aceptan **interés anual, número de cuotas y día de pago**, con cuota e interés mensual estimados.
+Además: cada pago fijo tiene un **historial mes por mes** (mantén pulsada la fila o ábrelo desde el formulario), las deudas aceptan **interés anual, número de cuotas y día de pago**, con cuota e interés mensual estimados, y las metas con fecha objetivo muestran **cuánto aportar al mes** para llegar a tiempo.
 
-**Datos nuevos.** `CategoriaPersonalizada`, `PresupuestoCategoria` y `PagoRealizado` son modelos nuevos; `Deuda` ganó `tasaInteresAnual`, `numeroCuotas` y `diaPago`, y `PagoFijo` ganó `historial`. Todos tienen valores por defecto, así que SwiftData migra la base existente sin perder nada. Regla para el futuro: nunca renombrar ni borrar propiedades ya guardadas; solo agregar con valor por defecto.
+**Datos nuevos.** `CategoriaPersonalizada`, `PresupuestoCategoria` y `PagoRealizado` son modelos nuevos; `Deuda` ganó `tasaInteresAnual`, `numeroCuotas` y `diaPago`, y `PagoFijo` ganó `historial`. Todos tienen valores por defecto, así que SwiftData migra la base existente sin perder nada. Después se sumaron `GastoRecurrente`, `Cuenta` y `MovimientoCuenta` (modelos nuevos) y la propiedad opcional `cuentaId` en `Gasto`, `PagoRealizado`, `AbonoDeuda`, `MovimientoMeta`, `PagoFijo` y `GastoRecurrente`. El saldo de una cuenta no se guarda: se calcula con lo asignado a ella. Regla para el futuro: nunca renombrar ni borrar propiedades ya guardadas; solo agregar con valor por defecto.
+
+**Para la App Store.** El proyecto ya incluye `PrivacyInfo.xcprivacy` (sin rastreo ni datos recopilados; declara el uso de `UserDefaults`) y la clave `ITSAppUsesNonExemptEncryption = NO`. Faltan, entre otros, la política de privacidad publicada en una URL, el programa de Apple Developer (de pago), capturas de pantalla y la firma con tu propio certificado. Dejar la base de datos versionada (`VersionedSchema`) para cuando haya un cambio que SwiftData no pueda migrar solo: hacerlo ahora, con datos ya guardados en el teléfono, sería más riesgoso que útil.
 
 ---
 
 ## Ideas para siguientes versiones
 
 - Registrar automáticamente un gasto al marcar un pago fijo como pagado.
-- Exportar los datos a CSV desde la propia app.
+- Traducción al inglés.
 - Bloqueo con Face ID o código (se dejó fuera a pedido).

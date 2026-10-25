@@ -125,6 +125,7 @@ struct DetalleCuentaView: View {
                         Label("Ajustar saldo", systemImage: "slider.horizontal.3")
                             .font(.subheadline)
                     }
+                    .buttonStyle(.borderless)
                 }
                 .padding(.vertical, 4)
             }
