@@ -11,6 +11,7 @@ enum DatosEjemplo {
             for: Gasto.self, Ingreso.self, PagoFijo.self,
             Deuda.self, AbonoDeuda.self, MetaAhorro.self, MovimientoMeta.self,
             CategoriaPersonalizada.self, PresupuestoCategoria.self, PagoRealizado.self,
+            GastoRecurrente.self,
             configurations: ModelConfiguration(isStoredInMemoryOnly: true)
         )
         let contexto = contenedor.mainContext
@@ -32,6 +33,14 @@ enum DatosEjemplo {
             let fecha = Calendar.current.date(byAdding: .day, value: -dias, to: .now) ?? .now
             contexto.insert(Gasto(concepto: "Gasto del día", monto: Double(10_000 + dias * 7_500), fecha: fecha))
         }
+
+        // Gastos automáticos
+        contexto.insert(GastoRecurrente(concepto: "Transporte", monto: 4_500,
+                                        categoriaClave: CategoriaGasto.transporte.rawValue,
+                                        frecuencia: .semanal, dia: 2))
+        contexto.insert(GastoRecurrente(concepto: "Mercado", monto: 350_000,
+                                        categoriaClave: CategoriaGasto.comida.rawValue,
+                                        frecuencia: .mensual, dia: 28))
 
         // Ingresos
         contexto.insert(Ingreso(fuente: "Salario", monto: 3_200_000, tipo: .salario, frecuencia: .mensual))

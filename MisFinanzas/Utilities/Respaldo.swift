@@ -22,6 +22,8 @@ struct RespaldoDatos: Codable {
     var metas: [MetaRespaldo] = []
     var categorias: [CategoriaRespaldo] = []
     var presupuestos: [PresupuestoRespaldo] = []
+    /// Opcional: las copias hechas antes de existir los gastos automáticos no traen este dato.
+    var recurrentes: [RecurrenteRespaldo]?
 
     /// Líneas de texto con lo que contiene la copia: «128 gastos», «3 deudas»...
     var resumen: [String] {
@@ -36,6 +38,7 @@ struct RespaldoDatos: Codable {
         agregar(metas.count, "meta de ahorro", "metas de ahorro")
         agregar(categorias.count, "categoría propia", "categorías propias")
         agregar(presupuestos.count, "presupuesto", "presupuestos")
+        agregar(recurrentes?.count ?? 0, "gasto automático", "gastos automáticos")
         return lineas
     }
 }
@@ -114,6 +117,19 @@ struct CategoriaRespaldo: Codable {
 struct PresupuestoRespaldo: Codable {
     var claveCategoria: String
     var montoMensual: Double
+}
+
+struct RecurrenteRespaldo: Codable {
+    var concepto: String
+    var monto: Double
+    var categoria: String
+    var frecuencia: String
+    var dia: Int
+    var fechaInicio: Date
+    var ultimaGeneracion: Date?
+    var activo: Bool
+    var nota: String
+    var fechaCreacion: Date
 }
 
 // MARK: - Errores
@@ -198,6 +214,16 @@ enum RespaldoServicio {
         let presupuestos = try contexto.fetch(FetchDescriptor<PresupuestoCategoria>())
         respaldo.presupuestos = presupuestos.map { presupuesto in
             PresupuestoRespaldo(claveCategoria: presupuesto.claveCategoria, montoMensual: presupuesto.montoMensual)
+        }
+
+        let recurrentes = try contexto.fetch(
+            FetchDescriptor<GastoRecurrente>(sortBy: [SortDescriptor(\GastoRecurrente.fechaCreacion)])
+        )
+        respaldo.recurrentes = recurrentes.map { r in
+            RecurrenteRespaldo(concepto: r.concepto, monto: r.monto, categoria: r.categoriaRaw,
+                               frecuencia: r.frecuenciaRaw, dia: r.dia, fechaInicio: r.fechaInicio,
+                               ultimaGeneracion: r.ultimaGeneracion, activo: r.activo, nota: r.nota,
+                               fechaCreacion: r.fechaCreacion)
         }
 
         return respaldo
@@ -302,6 +328,18 @@ enum RespaldoServicio {
             contexto.insert(PresupuestoCategoria(claveCategoria: p.claveCategoria, montoMensual: p.montoMensual))
         }
 
+        for r in respaldo.recurrentes ?? [] {
+            let recurrente = GastoRecurrente(
+                concepto: r.concepto, monto: r.monto, categoriaClave: r.categoria,
+                frecuencia: FrecuenciaRecurrente(rawValue: r.frecuencia) ?? .mensual,
+                dia: r.dia, fechaInicio: r.fechaInicio, nota: r.nota
+            )
+            recurrente.ultimaGeneracion = r.ultimaGeneracion
+            recurrente.activo = r.activo
+            recurrente.fechaCreacion = r.fechaCreacion
+            contexto.insert(recurrente)
+        }
+
         try contexto.save()
         UserDefaults.standard.set(respaldo.presupuestoDiario, forKey: "presupuestoDiario")
     }
@@ -315,5 +353,6 @@ enum RespaldoServicio {
         for x in try contexto.fetch(FetchDescriptor<MetaAhorro>()) { contexto.delete(x) }
         for x in try contexto.fetch(FetchDescriptor<CategoriaPersonalizada>()) { contexto.delete(x) }
         for x in try contexto.fetch(FetchDescriptor<PresupuestoCategoria>()) { contexto.delete(x) }
+        for x in try contexto.fetch(FetchDescriptor<GastoRecurrente>()) { contexto.delete(x) }
     }
 }

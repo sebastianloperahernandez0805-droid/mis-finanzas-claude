@@ -26,11 +26,14 @@ struct ContentView: View {
         .tint(Tema.acento)
         .barraDePestanasLiquida()
         // Los recordatorios se vuelven a programar al abrir la app y cada vez que vuelve a primer plano.
+        // También se crean los gastos automáticos que ya tocaban.
         .task {
+            GeneradorRecurrentes.generar(en: contexto)
             Recordatorios.actualizar(contexto: contexto)
         }
         .onChange(of: faseEscena) { _, nueva in
             if nueva == .active {
+                GeneradorRecurrentes.generar(en: contexto)
                 Recordatorios.actualizar(contexto: contexto)
             }
         }

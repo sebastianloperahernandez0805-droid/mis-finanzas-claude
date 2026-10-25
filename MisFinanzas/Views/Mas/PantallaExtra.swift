@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Las pantallas extra que se abren desde el menú «Más» de la pestaña Hoy.
 enum PantallaExtra: String, Identifiable, CaseIterable {
-    case resumenMes, tendencias, presupuestos, buscar, categorias, recordatorios, respaldo, acerca
+    case resumenMes, tendencias, presupuestos, recurrentes, buscar, categorias, recordatorios, respaldo, acerca
 
     var id: String { rawValue }
 
@@ -11,6 +11,7 @@ enum PantallaExtra: String, Identifiable, CaseIterable {
         case .resumenMes: "Resumen del mes"
         case .tendencias: "Tendencias"
         case .presupuestos: "Presupuestos"
+        case .recurrentes: "Gastos automáticos"
         case .buscar: "Buscar gastos"
         case .categorias: "Categorías"
         case .recordatorios: "Recordatorios y avisos"
@@ -24,6 +25,7 @@ enum PantallaExtra: String, Identifiable, CaseIterable {
         case .resumenMes: "chart.bar.doc.horizontal"
         case .tendencias: "chart.xyaxis.line"
         case .presupuestos: "chart.pie"
+        case .recurrentes: "arrow.triangle.2.circlepath"
         case .buscar: "magnifyingglass"
         case .categorias: "tag"
         case .recordatorios: "bell"
@@ -42,6 +44,7 @@ struct PantallaExtraView: View {
         case .resumenMes: ResumenMesView()
         case .tendencias: TendenciasView()
         case .presupuestos: PresupuestosView()
+        case .recurrentes: RecurrentesView()
         case .buscar: BuscarGastosView()
         case .categorias: CategoriasView()
         case .recordatorios: RecordatoriosView()

@@ -22,7 +22,8 @@ struct MisFinanzasApp: App {
             MovimientoMeta.self,
             CategoriaPersonalizada.self,
             PresupuestoCategoria.self,
-            PagoRealizado.self
+            PagoRealizado.self,
+            GastoRecurrente.self
         ])
         let configuracion = ModelConfiguration(
             schema: esquema,
