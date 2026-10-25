@@ -18,6 +18,7 @@ enum GeneradorRecurrentes {
                 let gasto = Gasto(concepto: recurrente.concepto, monto: recurrente.monto,
                                   fecha: fecha, nota: recurrente.nota)
                 gasto.categoriaRaw = recurrente.categoriaRaw
+                gasto.cuentaId = recurrente.cuentaId
                 contexto.insert(gasto)
                 creados += 1
             }

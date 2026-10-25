@@ -106,6 +106,7 @@ struct ResumenMesContenido: View {
     @Query private var movimientos: [MovimientoMeta]
     @Query private var ingresos: [Ingreso]
     @Query private var pagosFijos: [PagoFijo]
+    @Query private var depositos: [MovimientoCuenta]
     @Query(sort: \CategoriaPersonalizada.fechaCreacion) private var personalizadas: [CategoriaPersonalizada]
 
     private let mes: Date
@@ -136,6 +137,10 @@ struct ResumenMesContenido: View {
             filter: #Predicate<MovimientoMeta> { $0.fecha >= inicio && $0.fecha < fin },
             sort: \MovimientoMeta.fecha
         )
+        _depositos = Query(
+            filter: #Predicate<MovimientoCuenta> { $0.fecha >= inicio && $0.fecha < fin },
+            sort: \MovimientoCuenta.fecha
+        )
     }
 
     // MARK: Cálculos
@@ -155,6 +160,13 @@ struct ResumenMesContenido: View {
 
     private var totalIngresos: Double {
         ingresos.reduce(0) { $0 + $1.aporteMensual(en: mes) }
+    }
+
+    /// Ingresos que de verdad se depositaron en alguna cuenta este mes.
+    private var totalRecibido: Double {
+        depositos
+            .filter { $0.tipoRaw == TipoMovimientoCuenta.ingreso.rawValue }
+            .reduce(0) { $0 + $1.monto }
     }
 
     private var totalGastos: Double {
@@ -242,6 +254,9 @@ struct ResumenMesContenido: View {
         VStack(spacing: 16) {
             tarjetaPrincipal
             tarjetaBalance
+            if totalRecibido > 0 {
+                tarjetaRecibido
+            }
             if totalGastosAnterior > 0 || totalGastos > 0 {
                 tarjetaComparacion
             }
@@ -334,6 +349,45 @@ struct ResumenMesContenido: View {
                 Text(Formato.moneda(queda))
                     .font(.system(.headline, design: .rounded, weight: .bold))
                     .foregroundStyle(colorQueda)
+            }
+        }
+        .estiloTarjeta()
+    }
+
+    /// Compara lo que de verdad recibiste (depósitos en cuentas) con lo que estimaste en Ingresos.
+    private var tarjetaRecibido: some View {
+        let recibido = totalRecibido
+        let diferencia = recibido - totalIngresos
+        let avance = totalIngresos > 0 ? recibido / totalIngresos : 1
+
+        return VStack(alignment: .leading, spacing: 10) {
+            Text("Ingresos recibidos")
+                .font(.headline)
+
+            HStack(alignment: .firstTextBaseline) {
+                Text(Formato.moneda(recibido))
+                    .font(.system(.title2, design: .rounded, weight: .bold))
+                    .foregroundStyle(Tema.ingreso)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+                Spacer()
+                if totalIngresos > 0 {
+                    Text("de \(Formato.moneda(totalIngresos)) estimados")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            if totalIngresos > 0 {
+                BarraProgreso(valor: min(avance, 1), color: Tema.ingreso, altura: 10)
+
+                if abs(diferencia) >= 1 {
+                    Text(diferencia < 0
+                         ? "Te faltan \(Formato.moneda(abs(diferencia))) para llegar a lo estimado."
+                         : "Recibiste \(Formato.moneda(diferencia)) más de lo estimado.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
         }
         .estiloTarjeta()

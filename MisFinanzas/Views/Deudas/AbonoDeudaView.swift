@@ -13,10 +13,12 @@ struct AbonoDeudaView: View {
     @State private var montoTexto: String
     @State private var fecha: Date
     @State private var nota: String
+    @State private var cuentaId: String?
 
     init(deuda: Deuda, abono: AbonoDeuda? = nil) {
         self.deuda = deuda
         self.abono = abono
+        _cuentaId = State(initialValue: abono == nil ? Cuenta.predeterminadaId : abono?.cuentaId)
         _montoTexto = State(initialValue: abono.map { Formato.texto(desde: $0.monto) } ?? "")
         _fecha = State(initialValue: abono?.fecha ?? .now)
         _nota = State(initialValue: abono?.nota ?? "")
@@ -76,6 +78,8 @@ struct AbonoDeudaView: View {
                     .animation(.snappy, value: saldoResultante)
                 }
 
+                SeccionCuenta(cuentaId: $cuentaId, titulo: "Se paga desde")
+
                 Section {
                     DatePicker("Fecha", selection: $fecha, in: ...Date.now, displayedComponents: .date)
                     TextField("Nota (opcional)", text: $nota)
@@ -101,8 +105,9 @@ struct AbonoDeudaView: View {
             abono.monto = monto
             abono.fecha = fecha
             abono.nota = nota
+            abono.cuentaId = cuentaId
         } else {
-            deuda.abonar(monto, fecha: fecha, nota: nota, en: contexto)
+            deuda.abonar(monto, fecha: fecha, nota: nota, cuentaId: cuentaId, en: contexto)
         }
         cerrar()
     }

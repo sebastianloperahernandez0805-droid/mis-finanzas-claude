@@ -24,6 +24,9 @@ struct RespaldoDatos: Codable {
     var presupuestos: [PresupuestoRespaldo] = []
     /// Opcional: las copias hechas antes de existir los gastos automáticos no traen este dato.
     var recurrentes: [RecurrenteRespaldo]?
+    /// Opcionales por lo mismo: las copias viejas no tienen cuentas.
+    var cuentas: [CuentaRespaldo]?
+    var cuentaPredeterminada: String?
 
     /// Líneas de texto con lo que contiene la copia: «128 gastos», «3 deudas»...
     var resumen: [String] {
@@ -39,6 +42,7 @@ struct RespaldoDatos: Codable {
         agregar(categorias.count, "categoría propia", "categorías propias")
         agregar(presupuestos.count, "presupuesto", "presupuestos")
         agregar(recurrentes?.count ?? 0, "gasto automático", "gastos automáticos")
+        agregar(cuentas?.count ?? 0, "cuenta", "cuentas")
         return lineas
     }
 }
@@ -49,6 +53,7 @@ struct GastoRespaldo: Codable {
     var fecha: Date
     var categoria: String
     var nota: String
+    var cuentaId: String?
 }
 
 struct IngresoRespaldo: Codable {
@@ -63,6 +68,7 @@ struct IngresoRespaldo: Codable {
 struct RegistroPagoRespaldo: Codable {
     var fecha: Date
     var monto: Double
+    var cuentaId: String?
 }
 
 struct PagoFijoRespaldo: Codable {
@@ -73,6 +79,7 @@ struct PagoFijoRespaldo: Codable {
     var ultimoPago: Date?
     var nota: String
     var historial: [RegistroPagoRespaldo]
+    var cuentaId: String?
 }
 
 /// Sirve tanto para los abonos de una deuda como para los movimientos de una meta.
@@ -80,6 +87,24 @@ struct MovimientoRespaldo: Codable {
     var monto: Double
     var fecha: Date
     var nota: String
+    var cuentaId: String?
+}
+
+struct MovimientoCuentaRespaldo: Codable {
+    var monto: Double
+    var fecha: Date
+    var concepto: String
+    var tipo: String
+    var grupo: String?
+}
+
+struct CuentaRespaldo: Codable {
+    var identificador: String
+    var nombre: String
+    var tipo: String
+    var saldoInicial: Double
+    var fechaCreacion: Date
+    var movimientos: [MovimientoCuentaRespaldo]
 }
 
 struct DeudaRespaldo: Codable {
@@ -130,6 +155,7 @@ struct RecurrenteRespaldo: Codable {
     var activo: Bool
     var nota: String
     var fechaCreacion: Date
+    var cuentaId: String?
 }
 
 // MARK: - Errores
@@ -164,7 +190,7 @@ enum RespaldoServicio {
         let gastos = try contexto.fetch(FetchDescriptor<Gasto>(sortBy: [SortDescriptor(\Gasto.fecha)]))
         respaldo.gastos = gastos.map { gasto in
             GastoRespaldo(concepto: gasto.concepto, monto: gasto.monto, fecha: gasto.fecha,
-                          categoria: gasto.categoriaRaw, nota: gasto.nota)
+                          categoria: gasto.categoriaRaw, nota: gasto.nota, cuentaId: gasto.cuentaId)
         }
 
         let ingresos = try contexto.fetch(FetchDescriptor<Ingreso>(sortBy: [SortDescriptor(\Ingreso.fecha)]))
@@ -178,7 +204,8 @@ enum RespaldoServicio {
             PagoFijoRespaldo(
                 nombre: pago.nombre, monto: pago.monto, diaVencimiento: pago.diaVencimiento,
                 categoria: pago.categoriaRaw, ultimoPago: pago.ultimoPago, nota: pago.nota,
-                historial: pago.historial.map { RegistroPagoRespaldo(fecha: $0.fecha, monto: $0.monto) }
+                historial: pago.historial.map { RegistroPagoRespaldo(fecha: $0.fecha, monto: $0.monto, cuentaId: $0.cuentaId) },
+                cuentaId: pago.cuentaId
             )
         }
 
@@ -190,7 +217,7 @@ enum RespaldoServicio {
                 fechaLimite: deuda.fechaLimite, nota: deuda.nota,
                 tasaInteresAnual: deuda.tasaInteresAnual, numeroCuotas: deuda.numeroCuotas,
                 diaPago: deuda.diaPago,
-                abonos: deuda.abonos.map { MovimientoRespaldo(monto: $0.monto, fecha: $0.fecha, nota: $0.nota) }
+                abonos: deuda.abonos.map { MovimientoRespaldo(monto: $0.monto, fecha: $0.fecha, nota: $0.nota, cuentaId: $0.cuentaId) }
             )
         }
 
@@ -199,7 +226,7 @@ enum RespaldoServicio {
             MetaRespaldo(
                 nombre: meta.nombre, montoObjetivo: meta.montoObjetivo, icono: meta.iconoSistema,
                 paleta: meta.paletaRaw, fechaObjetivo: meta.fechaObjetivo, fechaCreacion: meta.fechaCreacion,
-                movimientos: meta.movimientos.map { MovimientoRespaldo(monto: $0.monto, fecha: $0.fecha, nota: $0.nota) }
+                movimientos: meta.movimientos.map { MovimientoRespaldo(monto: $0.monto, fecha: $0.fecha, nota: $0.nota, cuentaId: $0.cuentaId) }
             )
         }
 
@@ -223,8 +250,23 @@ enum RespaldoServicio {
             RecurrenteRespaldo(concepto: r.concepto, monto: r.monto, categoria: r.categoriaRaw,
                                frecuencia: r.frecuenciaRaw, dia: r.dia, fechaInicio: r.fechaInicio,
                                ultimaGeneracion: r.ultimaGeneracion, activo: r.activo, nota: r.nota,
-                               fechaCreacion: r.fechaCreacion)
+                               fechaCreacion: r.fechaCreacion, cuentaId: r.cuentaId)
         }
+
+        let cuentas = try contexto.fetch(
+            FetchDescriptor<Cuenta>(sortBy: [SortDescriptor(\Cuenta.fechaCreacion)])
+        )
+        respaldo.cuentas = cuentas.map { cuenta in
+            CuentaRespaldo(
+                identificador: cuenta.identificador, nombre: cuenta.nombre, tipo: cuenta.tipoRaw,
+                saldoInicial: cuenta.saldoInicial, fechaCreacion: cuenta.fechaCreacion,
+                movimientos: cuenta.movimientos.map { m in
+                    MovimientoCuentaRespaldo(monto: m.monto, fecha: m.fecha, concepto: m.concepto,
+                                             tipo: m.tipoRaw, grupo: m.grupo)
+                }
+            )
+        }
+        respaldo.cuentaPredeterminada = Cuenta.predeterminadaId
 
         return respaldo
     }
@@ -267,6 +309,7 @@ enum RespaldoServicio {
         for g in respaldo.gastos {
             let gasto = Gasto(concepto: g.concepto, monto: g.monto, fecha: g.fecha, nota: g.nota)
             gasto.categoriaRaw = g.categoria
+            gasto.cuentaId = g.cuentaId
             contexto.insert(gasto)
         }
 
@@ -283,9 +326,11 @@ enum RespaldoServicio {
             let pago = PagoFijo(nombre: p.nombre, monto: p.monto, diaVencimiento: p.diaVencimiento,
                                 categoria: CategoriaPagoFijo(rawValue: p.categoria) ?? .otro,
                                 ultimoPago: p.ultimoPago, nota: p.nota)
+            pago.cuentaId = p.cuentaId
             contexto.insert(pago)
             for h in p.historial {
                 let registro = PagoRealizado(monto: h.monto, fecha: h.fecha)
+                registro.cuentaId = h.cuentaId
                 contexto.insert(registro)
                 registro.pago = pago
             }
@@ -300,7 +345,7 @@ enum RespaldoServicio {
                               diaPago: d.diaPago)
             contexto.insert(deuda)
             for a in d.abonos {
-                deuda.abonar(a.monto, fecha: a.fecha, nota: a.nota, en: contexto)
+                deuda.abonar(a.monto, fecha: a.fecha, nota: a.nota, cuentaId: a.cuentaId, en: contexto)
             }
         }
 
@@ -311,7 +356,7 @@ enum RespaldoServicio {
                                   fechaObjetivo: m.fechaObjetivo, fechaCreacion: m.fechaCreacion)
             contexto.insert(meta)
             for mov in m.movimientos {
-                meta.registrar(mov.monto, nota: mov.nota, fecha: mov.fecha, en: contexto)
+                meta.registrar(mov.monto, nota: mov.nota, fecha: mov.fecha, cuentaId: mov.cuentaId, en: contexto)
             }
         }
 
@@ -337,11 +382,28 @@ enum RespaldoServicio {
             recurrente.ultimaGeneracion = r.ultimaGeneracion
             recurrente.activo = r.activo
             recurrente.fechaCreacion = r.fechaCreacion
+            recurrente.cuentaId = r.cuentaId
             contexto.insert(recurrente)
+        }
+
+        for c in respaldo.cuentas ?? [] {
+            let cuenta = Cuenta(nombre: c.nombre, tipo: TipoCuenta(rawValue: c.tipo) ?? .efectivo,
+                                saldoInicial: c.saldoInicial, fechaCreacion: c.fechaCreacion)
+            // Se conserva el identificador original: los gastos y pagos de la copia apuntan a él.
+            cuenta.identificador = c.identificador
+            contexto.insert(cuenta)
+            for m in c.movimientos {
+                let movimiento = MovimientoCuenta(monto: m.monto, fecha: m.fecha, concepto: m.concepto,
+                                                  tipo: TipoMovimientoCuenta(rawValue: m.tipo) ?? .ajuste,
+                                                  grupo: m.grupo)
+                contexto.insert(movimiento)
+                movimiento.cuenta = cuenta
+            }
         }
 
         try contexto.save()
         UserDefaults.standard.set(respaldo.presupuestoDiario, forKey: "presupuestoDiario")
+        Cuenta.establecerPredeterminada(respaldo.cuentaPredeterminada)
     }
 
     /// Borra todos los registros. Los abonos, movimientos e historiales se borran en cascada.
@@ -354,5 +416,7 @@ enum RespaldoServicio {
         for x in try contexto.fetch(FetchDescriptor<CategoriaPersonalizada>()) { contexto.delete(x) }
         for x in try contexto.fetch(FetchDescriptor<PresupuestoCategoria>()) { contexto.delete(x) }
         for x in try contexto.fetch(FetchDescriptor<GastoRecurrente>()) { contexto.delete(x) }
+        for x in try contexto.fetch(FetchDescriptor<Cuenta>()) { contexto.delete(x) }
+        for x in try contexto.fetch(FetchDescriptor<MovimientoCuenta>()) { contexto.delete(x) }
     }
 }

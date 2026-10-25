@@ -109,8 +109,9 @@ final class Deuda {
 
     /// Registra un abono nuevo. Se inserta primero en el contexto y luego se enlaza
     /// con la deuda, que es el orden recomendado para relaciones en SwiftData.
-    func abonar(_ monto: Double, fecha: Date = .now, nota: String = "", en contexto: ModelContext) {
+    func abonar(_ monto: Double, fecha: Date = .now, nota: String = "", cuentaId: String? = nil, en contexto: ModelContext) {
         let abono = AbonoDeuda(monto: monto, fecha: fecha, nota: nota)
+        abono.cuentaId = cuentaId
         contexto.insert(abono)
         abono.deuda = self
     }
@@ -123,6 +124,8 @@ final class AbonoDeuda {
     var fecha: Date
     var nota: String
     var deuda: Deuda?
+    /// Cuenta de la que salió el abono (nil = sin cuenta).
+    var cuentaId: String?
 
     init(monto: Double, fecha: Date = .now, nota: String = "") {
         self.monto = monto

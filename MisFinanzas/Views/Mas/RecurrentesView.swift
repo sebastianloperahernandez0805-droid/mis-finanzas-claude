@@ -125,10 +125,12 @@ struct RecurrenteFormView: View {
     @State private var dia: Int
     @State private var fechaInicio: Date
     @State private var activo: Bool
+    @State private var cuentaId: String?
     @State private var confirmandoBorrado = false
 
     init(recurrente: GastoRecurrente? = nil) {
         self.recurrente = recurrente
+        _cuentaId = State(initialValue: recurrente == nil ? Cuenta.predeterminadaId : recurrente?.cuentaId)
         _concepto = State(initialValue: recurrente?.concepto ?? "")
         _montoTexto = State(initialValue: recurrente.map { Formato.texto(desde: $0.monto) } ?? "")
         _categoriaClave = State(initialValue: recurrente?.categoriaRaw ?? CategoriaGasto.otros.rawValue)
@@ -171,6 +173,8 @@ struct RecurrenteFormView: View {
                     SelectorChips(opciones: CatalogoCategorias.todas(personalizadas), seleccion: categoriaElegida)
                         .listRowInsets(EdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12))
                 }
+
+                SeccionCuenta(cuentaId: $cuentaId, titulo: "Se descuenta de")
 
                 Section {
                     Picker("Se repite", selection: $frecuencia) {
@@ -260,11 +264,13 @@ struct RecurrenteFormView: View {
             recurrente.frecuencia = frecuencia
             recurrente.dia = dia
             recurrente.fechaInicio = fechaInicio
+            recurrente.cuentaId = cuentaId
             recurrente.cambiarActivo(activo)
         } else {
             let nuevo = GastoRecurrente(concepto: conceptoLimpio, monto: monto,
                                         categoriaClave: categoriaClave, frecuencia: frecuencia,
                                         dia: dia, fechaInicio: fechaInicio)
+            nuevo.cuentaId = cuentaId
             contexto.insert(nuevo)
         }
         // Si ya tocaba alguno (por ejemplo, empieza hoy), se crea de una vez.

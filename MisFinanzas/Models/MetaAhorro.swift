@@ -76,8 +76,9 @@ final class MetaAhorro {
     // MARK: Operaciones
 
     /// Registra un movimiento: monto positivo = aporte, negativo = retiro.
-    func registrar(_ monto: Double, nota: String = "", fecha: Date = .now, en contexto: ModelContext) {
+    func registrar(_ monto: Double, nota: String = "", fecha: Date = .now, cuentaId: String? = nil, en contexto: ModelContext) {
         let movimiento = MovimientoMeta(monto: monto, fecha: fecha, nota: nota)
+        movimiento.cuentaId = cuentaId
         contexto.insert(movimiento)
         movimiento.meta = self
     }
@@ -90,6 +91,8 @@ final class MovimientoMeta {
     var fecha: Date
     var nota: String
     var meta: MetaAhorro?
+    /// Cuenta de la que salió el aporte (o a la que volvió el retiro). nil = sin cuenta.
+    var cuentaId: String?
 
     init(monto: Double, fecha: Date = .now, nota: String = "") {
         self.monto = monto

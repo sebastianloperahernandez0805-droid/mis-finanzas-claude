@@ -12,6 +12,7 @@ struct AporteMetaView: View {
     @State private var montoTexto = ""
     @State private var nota = ""
     @State private var fecha = Date.now
+    @State private var cuentaId: String? = Cuenta.predeterminadaId
 
     private var monto: Double { Formato.numero(desde: montoTexto) ?? 0 }
 
@@ -81,6 +82,9 @@ struct AporteMetaView: View {
                 }
                 .animation(.snappy, value: nuevoAhorro)
 
+                SeccionCuenta(cuentaId: $cuentaId,
+                              titulo: tipo == .aporte ? "Sale de la cuenta" : "Entra a la cuenta")
+
                 Section {
                     DatePicker("Fecha", selection: $fecha, in: ...Date.now, displayedComponents: .date)
                     TextField("Nota (opcional)", text: $nota)
@@ -104,7 +108,7 @@ struct AporteMetaView: View {
     private func guardar() {
         // Aporte = positivo, retiro = negativo. El saldo de la meta se recalcula solo.
         let valor = tipo == .aporte ? monto : -monto
-        meta.registrar(valor, nota: nota, fecha: fecha, en: contexto)
+        meta.registrar(valor, nota: nota, fecha: fecha, cuentaId: cuentaId, en: contexto)
         cerrar()
     }
 }

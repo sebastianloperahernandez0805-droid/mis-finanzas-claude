@@ -36,6 +36,8 @@ final class GastoRecurrente {
     var activo: Bool = true
     var nota: String = ""
     var fechaCreacion: Date = Date.now
+    /// Cuenta de la que se descuentan los gastos que se crean solos (nil = sin cuenta).
+    var cuentaId: String?
 
     init(concepto: String,
          monto: Double,

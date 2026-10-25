@@ -14,10 +14,12 @@ struct PagoFijoFormView: View {
     @State private var categoria: CategoriaPagoFijo
     @State private var pagadoEsteMes: Bool
     @State private var nota: String
+    @State private var cuentaId: String?
     @State private var confirmandoBorrado = false
 
     init(pago: PagoFijo? = nil) {
         self.pago = pago
+        _cuentaId = State(initialValue: pago == nil ? Cuenta.predeterminadaId : pago?.cuentaId)
         _nombre = State(initialValue: pago?.nombre ?? "")
         _montoTexto = State(initialValue: pago.map { Formato.texto(desde: $0.monto) } ?? "")
         _dia = State(initialValue: pago?.diaVencimiento ?? Calendar.current.component(.day, from: .now))
@@ -54,6 +56,9 @@ struct PagoFijoFormView: View {
                 } footer: {
                     Text("Si un mes tiene menos días, el pago vence el último día de ese mes.")
                 }
+
+                SeccionCuenta(cuentaId: $cuentaId, titulo: "Se paga desde",
+                              pie: "Cada pago que marques como pagado se descuenta de esta cuenta.")
 
                 Section {
                     Toggle("Pagado este mes", isOn: $pagadoEsteMes.animation())
@@ -109,6 +114,8 @@ struct PagoFijoFormView: View {
             pago.diaVencimiento = dia
             pago.categoria = categoria
             pago.nota = nota
+            // La cuenta se asigna antes de marcar el pago, para que el registro nuevo la herede.
+            pago.cuentaId = cuentaId
             // Solo se cambia el pago de este mes si el interruptor es distinto del estado actual.
             // `alternarPago` también deja constancia (o la quita) en el historial.
             if pagadoEsteMes != pago.estaPagadoEsteMes {
@@ -117,6 +124,7 @@ struct PagoFijoFormView: View {
         } else {
             let nuevo = PagoFijo(nombre: nombreLimpio, monto: monto, diaVencimiento: dia,
                                  categoria: categoria, nota: nota)
+            nuevo.cuentaId = cuentaId
             contexto.insert(nuevo)
             if pagadoEsteMes {
                 nuevo.registrarPago(en: contexto)

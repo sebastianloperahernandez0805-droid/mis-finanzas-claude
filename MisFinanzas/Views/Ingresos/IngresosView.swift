@@ -9,6 +9,8 @@ struct IngresosView: View {
     @State private var mostrandoNuevo = false
     @State private var enEdicion: Ingreso?
     @State private var porEliminar: Ingreso?
+    @State private var cobrando: Ingreso?
+    @Query private var cuentas: [Cuenta]
 
     private var totalMensual: Double {
         ingresos.reduce(0) { $0 + $1.equivalenteMensual }
@@ -50,6 +52,17 @@ struct IngresosView: View {
                             FilaIngreso(ingreso: ingreso)
                                 .contentShape(Rectangle())
                                 .onTapGesture { enEdicion = ingreso }
+                                .swipeActions(edge: .leading) {
+                                    // «Lo recibí»: suma la plata real a una cuenta (solo si ya hay cuentas).
+                                    if !cuentas.isEmpty {
+                                        Button {
+                                            cobrando = ingreso
+                                        } label: {
+                                            Label("Lo recibí", systemImage: "arrow.down.circle")
+                                        }
+                                        .tint(.green)
+                                    }
+                                }
                                 .swipeActions(edge: .trailing) {
                                     Button(role: .destructive) {
                                         porEliminar = ingreso
@@ -73,6 +86,10 @@ struct IngresosView: View {
             }
             .sheet(isPresented: $mostrandoNuevo) { IngresoFormView() }
             .sheet(item: $enEdicion) { IngresoFormView(ingreso: $0) }
+            .sheet(item: $cobrando) { ingreso in
+                DepositoView(ingreso: ingreso)
+                    .presentationDetents([.medium, .large])
+            }
             .confirmarEliminacion(
                 "¿Eliminar este ingreso?",
                 mensaje: "Esta acción no se puede deshacer.",

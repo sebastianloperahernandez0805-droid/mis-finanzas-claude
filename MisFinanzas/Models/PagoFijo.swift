@@ -15,6 +15,8 @@ final class PagoFijo {
     var categoriaRaw: String
     var ultimoPago: Date?
     var nota: String
+    /// Cuenta de la que se paga (nil = sin cuenta). Cada pago nuevo del historial la hereda.
+    var cuentaId: String?
 
     /// Historial de pagos mes por mes. Al borrar el pago fijo se borra también su historial.
     @Relationship(deleteRule: .cascade, inverse: \PagoRealizado.pago)
@@ -85,6 +87,7 @@ final class PagoFijo {
     func registrarPago(fecha: Date = Date.now, en contexto: ModelContext) {
         ultimoPago = fecha
         let registro = PagoRealizado(monto: monto, fecha: fecha)
+        registro.cuentaId = cuentaId
         contexto.insert(registro)
         registro.pago = self
     }
@@ -103,6 +106,7 @@ final class PagoFijo {
     /// Agrega un pago de cualquier fecha al historial (por ejemplo, uno de un mes anterior).
     func agregarRegistro(monto: Double, fecha: Date, en contexto: ModelContext) {
         let registro = PagoRealizado(monto: monto, fecha: fecha)
+        registro.cuentaId = cuentaId
         contexto.insert(registro)
         registro.pago = self
         ultimoPago = max(ultimoPago ?? fecha, fecha)

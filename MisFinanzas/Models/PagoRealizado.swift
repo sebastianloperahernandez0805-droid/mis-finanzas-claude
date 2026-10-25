@@ -8,6 +8,8 @@ final class PagoRealizado {
     var fecha: Date = Date.now
     var monto: Double = 0
     var pago: PagoFijo?
+    /// Cuenta de la que salió el pago (nil = sin cuenta).
+    var cuentaId: String?
 
     init(monto: Double, fecha: Date = Date.now) {
         self.monto = monto

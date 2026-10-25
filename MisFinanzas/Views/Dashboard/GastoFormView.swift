@@ -15,11 +15,14 @@ struct GastoFormView: View {
     @State private var categoriaClave: String
     @State private var fecha: Date
     @State private var nota: String
+    @State private var cuentaId: String?
     @State private var confirmandoBorrado = false
     @State private var creandoCategoria = false
 
     init(gasto: Gasto? = nil, fechaInicial: Date = .now) {
         self.gasto = gasto
+        // Un gasto nuevo sale de la cuenta predeterminada (si hay una); uno existente conserva la suya.
+        _cuentaId = State(initialValue: gasto == nil ? Cuenta.predeterminadaId : gasto?.cuentaId)
         _concepto = State(initialValue: gasto?.concepto ?? "")
         _montoTexto = State(initialValue: gasto.map { Formato.texto(desde: $0.monto) } ?? "")
         _categoriaClave = State(initialValue: gasto?.categoriaRaw ?? CategoriaGasto.otros.rawValue)
@@ -59,6 +62,8 @@ struct GastoFormView: View {
                         Label("Nueva categoría", systemImage: "plus.circle")
                     }
                 }
+
+                SeccionCuenta(cuentaId: $cuentaId, titulo: "Se descuenta de")
 
                 Section {
                     DatePicker("Fecha y hora", selection: $fecha, in: ...Date.now)
@@ -110,9 +115,11 @@ struct GastoFormView: View {
             gasto.categoriaClave = categoriaClave
             gasto.fecha = fecha
             gasto.nota = nota
+            gasto.cuentaId = cuentaId
         } else {
             let nuevo = Gasto(concepto: conceptoLimpio, monto: monto, fecha: fecha, nota: nota)
             nuevo.categoriaClave = categoriaClave
+            nuevo.cuentaId = cuentaId
             contexto.insert(nuevo)
         }
         cerrar()

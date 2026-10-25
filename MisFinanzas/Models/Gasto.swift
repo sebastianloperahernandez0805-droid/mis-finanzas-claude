@@ -13,6 +13,8 @@ final class Gasto {
     var fecha: Date
     var categoriaRaw: String
     var nota: String
+    /// Cuenta de la que salió la plata (nil = sin cuenta). Es opcional para que los gastos de antes sigan igual.
+    var cuentaId: String?
 
     init(concepto: String,
          monto: Double,
