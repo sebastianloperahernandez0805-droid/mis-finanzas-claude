@@ -6,6 +6,9 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
+    # La versión web (carpeta docs) no necesita compilar la app de iPhone.
+    paths-ignore:
+      - 'docs/**'
 
 jobs:
   compilar:
